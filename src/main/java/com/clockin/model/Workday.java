@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-public class WorkdaySummary {
+public class Workday {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,9 @@ public class WorkdaySummary {
     private Instant afternoonCheckIn;
     private Instant afternoonCheckOut;
 
-    public WorkdaySummary(){}
+    public Workday(){}
 
-    public WorkdaySummary(Employee employee, Instant workdayDate, String dayOfTheWeek, Instant morningCheckIn, Instant morningCheckOut, Instant afternoonCheckIn, Instant afternoonCheckOut) {
+    public Workday(Employee employee, Instant workdayDate, String dayOfTheWeek, Instant morningCheckIn, Instant morningCheckOut, Instant afternoonCheckIn, Instant afternoonCheckOut) {
         this.employee = employee;
         this.workdayDate = workdayDate;
         this.dayOfTheWeek = dayOfTheWeek;
