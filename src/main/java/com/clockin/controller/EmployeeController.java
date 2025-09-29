@@ -14,9 +14,13 @@ import java.util.List;
 @RequestMapping("/employees")
 public class EmployeeController {
 
-    @Autowired
-    private  EmployeeService employeeService;
-    private  WorkdayService workdayService;
+    private final EmployeeService employeeService;
+    private final WorkdayService workdayService;
+
+    public EmployeeController(EmployeeService employeeService, WorkdayService workdayService){
+        this.employeeService = employeeService;
+        this.workdayService = workdayService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Employee>> listEmployees(){
@@ -25,15 +29,15 @@ public class EmployeeController {
 
     }
 
-    @GetMapping("/{employeeId}/workday")
+    @GetMapping("/{employeeId}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId){
 
         return ResponseEntity.ok().body(employeeService.getEmployeeById(employeeId));
 
     }
 
-    @PostMapping("/{employeeId/workday}")
-    public void clockIn(@PathVariable Long employeeId){
-
+    @PostMapping("/{employeeId}/workday")
+    public void registerWorkday(@PathVariable Long employeeId){
+        workdayService.registerWorkday(employeeId);
     }
 }
