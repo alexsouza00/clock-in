@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmployeeService {
@@ -19,13 +20,12 @@ public class EmployeeService {
     }
 
     public List<Employee> getEmployees(){
-        Employee emp = new Employee("Alex", "123123", ContractType.CLT);
-        Employee em2 = new Employee("Alex", "123123", ContractType.CLT);
-        repository.save(emp);
-        repository.save(em2);
-
         List<Employee> employees = repository.findAll();
         return employees;
+    }
 
+    public Employee getEmployeeById(Long id){
+        Optional<Employee> ep = repository.findById(id);
+        return ep.get();
     }
 }

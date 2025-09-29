@@ -1,8 +1,10 @@
 package com.clockin.model;
 
 import jakarta.persistence.*;
+import org.aspectj.lang.annotation.RequiredTypes;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 public class Workday {
@@ -14,16 +16,16 @@ public class Workday {
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
-    private Instant workdayDate;
+    private LocalDate workdayDate;
     private String dayOfTheWeek;
-    private Instant morningCheckIn;
-    private Instant morningCheckOut;
-    private Instant afternoonCheckIn;
-    private Instant afternoonCheckOut;
+    private LocalDate morningCheckIn;
+    private LocalDate morningCheckOut;
+    private LocalDate afternoonCheckIn;
+    private LocalDate afternoonCheckOut;
 
     public Workday(){}
 
-    public Workday(Employee employee, Instant workdayDate, String dayOfTheWeek, Instant morningCheckIn, Instant morningCheckOut, Instant afternoonCheckIn, Instant afternoonCheckOut) {
+    public Workday(Employee employee, LocalDate workdayDate, String dayOfTheWeek, LocalDate morningCheckIn, LocalDate morningCheckOut, LocalDate afternoonCheckIn, LocalDate afternoonCheckOut) {
         this.employee = employee;
         this.workdayDate = workdayDate;
         this.dayOfTheWeek = dayOfTheWeek;
@@ -41,11 +43,15 @@ public class Workday {
         return employee;
     }
 
-    public Instant getWorkdayDate() {
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+
+    public LocalDate getWorkdayDate() {
         return workdayDate;
     }
 
-    public void setWorkdayDate(Instant workdayDate) {
+    public void setWorkdayDate(LocalDate workdayDate) {
         this.workdayDate = workdayDate;
     }
 
@@ -57,35 +63,35 @@ public class Workday {
         this.dayOfTheWeek = dayOfTheWeek;
     }
 
-    public Instant getMorningCheckIn() {
+    public LocalDate getMorningCheckIn() {
         return morningCheckIn;
     }
 
-    public void setMorningCheckIn(Instant morningCheckIn) {
+    public void setMorningCheckIn(LocalDate morningCheckIn) {
         this.morningCheckIn = morningCheckIn;
     }
 
-    public Instant getMorningCheckOut() {
+    public LocalDate getMorningCheckOut() {
         return morningCheckOut;
     }
 
-    public void setMorningCheckOut(Instant morningCheckOut) {
+    public void setMorningCheckOut(LocalDate morningCheckOut) {
         this.morningCheckOut = morningCheckOut;
     }
 
-    public Instant getAfternoonCheckIn() {
+    public LocalDate getAfternoonCheckIn() {
         return afternoonCheckIn;
     }
 
-    public void setAfternoonCheckIn(Instant afternoonCheckIn) {
+    public void setAfternoonCheckIn(LocalDate afternoonCheckIn) {
         this.afternoonCheckIn = afternoonCheckIn;
     }
 
-    public Instant getAfternoonCheckOut() {
+    public LocalDate getAfternoonCheckOut() {
         return afternoonCheckOut;
     }
 
-    public void setAfternoonCheckOut(Instant afternoonCheckOut) {
+    public void setAfternoonCheckOut(LocalDate afternoonCheckOut) {
         this.afternoonCheckOut = afternoonCheckOut;
     }
 
