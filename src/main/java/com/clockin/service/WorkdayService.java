@@ -5,7 +5,7 @@ import com.clockin.repository.WorkdayRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -32,7 +32,7 @@ public class WorkdayService {
         workday.setEmployee(employeeService.getEmployeeById(employeeId));
         workday.setWorkdayDate(workdayDate);
         workday.setDayOfTheWeek(workdayDate.getDayOfWeek().name());
-        workday.setMorningCheckIn(OffsetDateTime.now());
+        workday.setMorningCheckIn(LocalTime.now());
         workdayRepository.save(workday);
 
     }

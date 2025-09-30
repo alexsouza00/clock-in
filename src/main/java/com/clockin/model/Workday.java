@@ -3,6 +3,7 @@
     import jakarta.persistence.*;
 
     import java.time.LocalDate;
+    import java.time.LocalTime;
     import java.time.OffsetDateTime;
 
     @Entity
@@ -17,12 +18,14 @@
         private Employee employee;
         private LocalDate workdayDate;
         private String dayOfTheWeek;
-        private OffsetDateTime morningCheckIn;
-        private OffsetDateTime morningCheckOut;
-        private OffsetDateTime afternoonCheckIn;
-        private OffsetDateTime afternoonCheckOut;
+        private LocalTime morningCheckIn;
+        private LocalTime morningCheckOut;
+        private LocalTime afternoonCheckIn;
+        private LocalTime afternoonCheckOut;
 
-        public Workday(Employee employee, LocalDate workdayDate, String dayOfTheWeek, OffsetDateTime morningCheckIn, OffsetDateTime morningCheckOut, OffsetDateTime afternoonCheckIn, OffsetDateTime afternoonCheckOut) {
+        public Workday(){}
+
+        public Workday(Employee employee, LocalDate workdayDate, String dayOfTheWeek, LocalTime morningCheckIn, LocalTime morningCheckOut, LocalTime afternoonCheckIn, LocalTime afternoonCheckOut) {
             this.employee = employee;
             this.workdayDate = workdayDate;
             this.dayOfTheWeek = dayOfTheWeek;
@@ -31,8 +34,6 @@
             this.afternoonCheckIn = afternoonCheckIn;
             this.afternoonCheckOut = afternoonCheckOut;
         }
-
-        public Workday(){}
 
         public Long getId() {
             return id;
@@ -62,35 +63,35 @@
             this.dayOfTheWeek = dayOfTheWeek;
         }
 
-        public OffsetDateTime getMorningCheckIn() {
+        public LocalTime getMorningCheckIn() {
             return morningCheckIn;
         }
 
-        public void setMorningCheckIn(OffsetDateTime morningCheckIn) {
+        public void setMorningCheckIn(LocalTime morningCheckIn) {
             this.morningCheckIn = morningCheckIn;
         }
 
-        public OffsetDateTime getMorningCheckOut() {
+        public LocalTime getMorningCheckOut() {
             return morningCheckOut;
         }
 
-        public void setMorningCheckOut(OffsetDateTime morningCheckOut) {
+        public void setMorningCheckOut(LocalTime morningCheckOut) {
             this.morningCheckOut = morningCheckOut;
         }
 
-        public OffsetDateTime getAfternoonCheckIn() {
+        public LocalTime getAfternoonCheckIn() {
             return afternoonCheckIn;
         }
 
-        public void setAfternoonCheckIn(OffsetDateTime afternoonCheckIn) {
+        public void setAfternoonCheckIn(LocalTime afternoonCheckIn) {
             this.afternoonCheckIn = afternoonCheckIn;
         }
 
-        public OffsetDateTime getAfternoonCheckOut() {
+        public LocalTime getAfternoonCheckOut() {
             return afternoonCheckOut;
         }
 
-        public void setAfternoonCheckOut(OffsetDateTime afternoonCheckOut) {
+        public void setAfternoonCheckOut(LocalTime afternoonCheckOut) {
             this.afternoonCheckOut = afternoonCheckOut;
         }
 

@@ -12,6 +12,8 @@ public class Employee {
     private Long id;
     private String name;
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private ContractType contractType;
 
     public Employee(){
