@@ -16,12 +16,12 @@ public class EmployeeService {
         this.repository = repository;
     }
 
-    public List<Employee> getEmployees(){
+    public List<Employee> getEmployees() {
         List<Employee> employees = repository.findAll();
         return employees;
     }
 
-    public Employee getEmployeeById(Long id){
+    public Employee getEmployeeById(Long id) {
         Optional<Employee> ep = repository.findById(id);
         return ep.get();
     }

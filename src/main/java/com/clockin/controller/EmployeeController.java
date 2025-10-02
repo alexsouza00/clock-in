@@ -3,8 +3,6 @@ package com.clockin.controller;
 import com.clockin.model.Employee;
 import com.clockin.service.EmployeeService;
 import com.clockin.service.WorkdayService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,27 +15,27 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final WorkdayService workdayService;
 
-    public EmployeeController(EmployeeService employeeService, WorkdayService workdayService){
+    public EmployeeController(EmployeeService employeeService, WorkdayService workdayService) {
         this.employeeService = employeeService;
         this.workdayService = workdayService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> listEmployees(){
+    public ResponseEntity<List<Employee>> listEmployees() {
 
-       return ResponseEntity.ok().body(employeeService.getEmployees());
+        return ResponseEntity.ok().body(employeeService.getEmployees());
 
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId){
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId) {
 
         return ResponseEntity.ok().body(employeeService.getEmployeeById(employeeId));
 
     }
 
     @PostMapping("/{employeeId}/workday")
-    public void registerWorkday(@PathVariable Long employeeId){
+    public void registerWorkday(@PathVariable Long employeeId) {
         workdayService.registerWorkday(employeeId);
     }
 }

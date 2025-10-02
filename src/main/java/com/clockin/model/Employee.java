@@ -1,7 +1,10 @@
 package com.clockin.model;
 
 import com.clockin.model.enums.ContractType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "employees")
@@ -16,7 +19,11 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private ContractType contractType;
 
-    public Employee(){
+    @JsonIgnore
+    @OneToMany(mappedBy = "employee")
+    private List<Workday> workdays;
+
+    public Employee() {
 
     }
 
@@ -56,6 +63,10 @@ public class Employee {
 
     public void setContractType(ContractType contractType) {
         this.contractType = contractType;
+    }
+
+    public List<Workday> getWorkdays() {
+        return workdays;
     }
 
     @Override

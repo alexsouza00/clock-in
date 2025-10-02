@@ -1,12 +1,13 @@
 package com.clockin.service;
 
+import com.clockin.model.Employee;
 import com.clockin.model.Workday;
 import com.clockin.repository.WorkdayRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WorkdayService {
@@ -20,20 +21,33 @@ public class WorkdayService {
         this.employeeService = employeeService;
     }
 
-    public List<Workday> getWorkdaySummary(){
-        List<Workday> days = workdayRepository.findAll();
-        return days;
+    public Optional<Workday> findWorkday(Long employeeId, LocalDate localdate) {
+        Optional<Workday> workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
+        return workday;
     }
 
-    public void registerWorkday(Long employeeId){
+    public void registerWorkday(Long employeeId) {
 
-        Workday workday = new Workday();
-        LocalDate workdayDate = LocalDate.now();
-        workday.setEmployee(employeeService.getEmployeeById(employeeId));
-        workday.setWorkdayDate(workdayDate);
-        workday.setDayOfTheWeek(workdayDate.getDayOfWeek().name());
-        workday.setMorningCheckIn(LocalTime.now());
-        workdayRepository.save(workday);
+        Optional<Workday> workday = findWorkday(employeeId, LocalDate.now());
+
+        if (workday.isEmpty()) {
+            Workday newWorkday = new Workday();
+            LocalDate workdayDate = LocalDate.now();
+            newWorkday.setEmployee(employeeService.getEmployeeById(employeeId));
+            newWorkday.setWorkdayDate(workdayDate);
+            newWorkday.setDayOfTheWeek(workdayDate.getDayOfWeek().name());
+            newWorkday.setMorningCheckIn(LocalTime.now());
+            workdayRepository.save(newWorkday);
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null) {
+            workday.get().setMorningCheckOut(LocalTime.now());
+            workdayRepository.save(workday.get());
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
+            workday.get().setAfternoonCheckIn(LocalTime.now());
+            workdayRepository.save(workday.get());
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
+            workday.get().setAfternoonCheckOut(LocalTime.now());
+            workdayRepository.save(workday.get());
+        }
 
     }
 }
