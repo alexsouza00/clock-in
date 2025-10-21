@@ -1,5 +1,6 @@
 package com.clockin.controller;
 
+import com.clockin.dto.WorkStatistic;
 import com.clockin.model.Employee;
 import com.clockin.service.EmployeeService;
 import com.clockin.service.WorkdayService;
@@ -37,5 +38,11 @@ public class EmployeeController {
     @PostMapping("/{employeeId}/workday")
     public void registerWorkday(@PathVariable Long employeeId) {
         workdayService.registerWorkday(employeeId);
+    }
+
+    @GetMapping("/{employeeId}/workdays")
+    public ResponseEntity<WorkStatistic> getWorkdays(@PathVariable Long employeeId) {
+      WorkStatistic workdays = workdayService.workStatistic(employeeId);
+        return ResponseEntity.ok().body(workdays);
     }
 }
