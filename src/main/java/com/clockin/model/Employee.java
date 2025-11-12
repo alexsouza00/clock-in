@@ -8,13 +8,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "employees")
-public class Employee {
+public class Employee{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String password;
 
     @Enumerated(EnumType.STRING)
     private ContractType contractType;
@@ -27,18 +26,13 @@ public class Employee {
 
     }
 
-    public Employee(String name, String password, ContractType contractType) {
+    public Employee(String name, ContractType contractType) {
         this.name = name;
-        this.password = password;
         this.contractType = contractType;
     }
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -47,14 +41,6 @@ public class Employee {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public ContractType getContractType() {
@@ -74,7 +60,7 @@ public class Employee {
         return "Employee{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", password='" + password + '\'' +
+                ", contractType=" + contractType +
                 '}';
     }
 }
