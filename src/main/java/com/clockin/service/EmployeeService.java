@@ -25,4 +25,12 @@ public class EmployeeService {
         Optional<Employee> ep = repository.findById(id);
         return ep.get();
     }
+
+    public void registerEmployee(Employee employee){
+        repository.save(employee);
+    }
+
+    public void deleteEmployeeById(Long employeeId){
+        repository.deleteById(employeeId);
+    }
 }

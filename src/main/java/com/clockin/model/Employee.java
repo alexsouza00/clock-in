@@ -23,7 +23,6 @@ public class Employee{
     private List<Workday> workdays;
 
     public Employee() {
-
     }
 
     public Employee(String name, ContractType contractType) {

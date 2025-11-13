@@ -33,5 +33,4 @@ public class WorkdayController {
         workdayService.registerWorkday(employeeId);
     }
 
-
 }
