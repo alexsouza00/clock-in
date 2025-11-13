@@ -3,6 +3,7 @@ package com.clockin.service;
 import com.clockin.dto.WorkStatistic;
 import com.clockin.model.Workday;
 import com.clockin.repository.WorkdayRepository;
+import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -22,8 +23,15 @@ public class WorkdayService {
         this.employeeService = employeeService;
     }
 
+    public List<Workday> getAllWorkdays(Long employeeId){
+        List<Workday> workdays = workdayRepository.findByEmployeeId(employeeId);
+        return workdays;
+    }
+
     public Optional<Workday> findWorkday(Long employeeId, LocalDate localdate) {
         Optional<Workday> workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
+        if (workday.isEmpty()){
+        }
         return workday;
     }
 
@@ -53,6 +61,7 @@ public class WorkdayService {
     }
 
     public WorkStatistic workStatistic(Long id) {
+
         List<Workday> allWorkdays = workdayRepository.findByEmployeeId(id);
 
         int hoursWorkedInTheMonth = 0;
@@ -113,4 +122,5 @@ public class WorkdayService {
 
         return ws;
     }
+
 }
