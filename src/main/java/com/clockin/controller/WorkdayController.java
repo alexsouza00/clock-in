@@ -1,6 +1,6 @@
 package com.clockin.controller;
 
-import com.clockin.dto.WorkStatistic;
+import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Workday;
 import com.clockin.service.WorkdayService;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +18,13 @@ public class WorkdayController {
         this.workdayService = workdayService;
     }
     @GetMapping("/{employeeId}")
-    public ResponseEntity<List<Workday>> getAllWorkdays(@PathVariable Long employeeId){
-            return ResponseEntity.ok().body(workdayService.getAllWorkdays(employeeId));
+    public ResponseEntity<List<Workday>> getAllWorkdaysByEmployee(@PathVariable Long employeeId){
+            return ResponseEntity.ok().body(workdayService.getAllWorkdaysByEmployee(employeeId));
     }
 
-    @GetMapping("/{employeeId}/statistics")
-    public ResponseEntity<WorkStatistic> getWorkdays(@PathVariable Long employeeId) {
-        WorkStatistic workdays = workdayService.workStatistic(employeeId);
+    @GetMapping("/{employeeId}/stats")
+    public ResponseEntity<WorkStats> getWorkdays(@PathVariable Long employeeId) {
+        WorkStats workdays = workdayService.workStats(employeeId);
         return ResponseEntity.ok().body(workdays);
     }
 

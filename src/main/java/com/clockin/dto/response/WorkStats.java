@@ -1,7 +1,7 @@
-package com.clockin.dto;
+package com.clockin.dto.response;
 
 
-public class WorkStatistic {
+public class WorkStats {
 
     private String name;
     private String hoursWorkedInTheMonth;
@@ -9,7 +9,7 @@ public class WorkStatistic {
     private String hoursWorkedInTheDay;
 
 
-    public WorkStatistic(String name, String hoursWorkedInTheMonth, String hoursWorkedInTheWeek, String hoursWorkedInTheDay) {
+    public WorkStats(String name, String hoursWorkedInTheMonth, String hoursWorkedInTheWeek, String hoursWorkedInTheDay) {
         this.name = name;
         this.hoursWorkedInTheMonth = hoursWorkedInTheMonth;
         this.hoursWorkedInTheWeek = hoursWorkedInTheWeek;
