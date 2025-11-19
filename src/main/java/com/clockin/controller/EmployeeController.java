@@ -1,7 +1,9 @@
 package com.clockin.controller;
 
+import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Employee;
 import com.clockin.service.EmployeeService;
+import com.clockin.service.WorkdayService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,11 @@ import java.util.List;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final WorkdayService workdayService;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, WorkdayService workdayService) {
         this.employeeService = employeeService;
+        this.workdayService = workdayService;
     }
 
     @GetMapping
@@ -27,6 +31,12 @@ public class EmployeeController {
     @GetMapping("/{employeeId}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId) {
         return ResponseEntity.ok().body(employeeService.getEmployeeById(employeeId));
+    }
+
+    @GetMapping("/{employeeId}/stats")
+    public ResponseEntity<WorkStats> getWorkdays(@PathVariable Long employeeId) {
+        WorkStats workdays = workdayService.workStats(employeeId);
+        return ResponseEntity.ok().body(workdays);
     }
 
     @PostMapping()
