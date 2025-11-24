@@ -8,9 +8,7 @@ import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,10 +34,7 @@ public class WorkdayService {
     }
 
     public Optional<Workday> findWorkday(Long employeeId, LocalDate localdate) {
-        Optional<Workday> workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
-        if (workday.isEmpty()) {
-        }
-        return workday;
+        return workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
     }
 
     public void registerWorkday(Long employeeId) {
@@ -72,66 +67,44 @@ public class WorkdayService {
 
     public WorkStats workStats(Long employeeId) {
 
-        if (employeeRepository.existsById(employeeId)) {
-            List<Workday> allWorkdays = workdayRepository.findByEmployeeId(employeeId);
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new EmployeeNotFoundException();
+        }
 
-            int hoursWorkedInTheMonth = 0;
-            int minutesWorkedInTheMonth = 0;
-            int hoursWorkedInTheWeek = 0;
-            int minutesWorkedInTheWeek = 0;
-            int hoursWorkedInTheDay = 0;
-            int minutesWorkedInTheDay = 0;
-            double totalTime = 0.0;
-            double totalTimeDay = 0.0;
-            double totalTimeWeek = 0.0;
+        List<Workday> allWorkdays = workdayRepository.findByEmployeeId(employeeId);
 
+        LocalDate today = LocalDate.now();
+        Month currentMonth = LocalDate.now().getMonth();
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() % 7);
 
-            for (Workday day : allWorkdays) {
+        long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(this::timeWorked).sum();
+        long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(this::timeWorked).sum();
+        long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
 
-                if (day.getWorkdayDate().getMonth() == LocalDate.now().getMonth()) {
-                    Duration morningDuration = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut());
-                    totalTime += morningDuration.toMinutes();
-                    Duration afternoonDuration = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut());
-                    totalTime += afternoonDuration.toMinutes();
-                }
+        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(), timeFormatter(minutesWorkedInTheMonth), timeFormatter(minutesWorkedInTheWeek), timeFormatter(minutesWorkedToday));
 
-                hoursWorkedInTheMonth = (int) (totalTime / 60);
-                minutesWorkedInTheMonth = (int) (totalTime % 60);
+    }
 
-                if (day.getWorkdayDate().getDayOfMonth() == LocalDate.now().getDayOfMonth()) {
-                    for (int i = 0; i < 7; i++) {
-                        Optional<Workday> weekDays = findWorkday(day.getEmployee().getId(), day.getWorkdayDate().minusDays(i));
-                        if (weekDays.isEmpty()) {
-                        } else {
-                            Duration morningDuration = Duration.between(weekDays.get().getMorningCheckIn(), weekDays.get().getMorningCheckOut());
-                            totalTimeWeek += morningDuration.toMinutes();
-                            Duration afternoonDuration = Duration.between(weekDays.get().getAfternoonCheckIn(), weekDays.get().getAfternoonCheckOut());
-                            totalTimeWeek += afternoonDuration.toMinutes();
-                        }
-                    }
-                    hoursWorkedInTheWeek = (int) (totalTimeWeek / 60);
-                    minutesWorkedInTheWeek = (int) (totalTimeWeek % 60);
-                }
+    public long timeWorked(Workday day) {
 
-                if (day.getWorkdayDate().getDayOfMonth() == LocalDate.now().getDayOfMonth()) {
-                    Duration morningDuration = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut());
-                    totalTimeDay += morningDuration.toMinutes();
-                    Duration afternoonDuration = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut());
-                    totalTimeDay += afternoonDuration.toMinutes();
-                }
+        Duration morningDuration = Duration.ofMinutes(0);
+        Duration afternoonDuration = Duration.ofMinutes(0);
 
-                hoursWorkedInTheDay = (int) (totalTimeDay / 60);
-                minutesWorkedInTheDay = (int) (totalTimeDay % 60);
+        if (day.getMorningCheckIn() != null && day.getMorningCheckOut() != null) {
+            morningDuration = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut());
+        }
+        if (day.getAfternoonCheckIn() != null && day.getAfternoonCheckOut() != null) {
+            afternoonDuration = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut());
+        }
+        return morningDuration.toMinutes() + afternoonDuration.toMinutes();
 
-            }
+    }
 
-            WorkStats ws = new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
-                    String.format("%02d:%02d", hoursWorkedInTheMonth, minutesWorkedInTheMonth),
-                    String.format("%02d:%02d", hoursWorkedInTheWeek, minutesWorkedInTheWeek),
-                    String.format("%02d:%02d", hoursWorkedInTheDay, minutesWorkedInTheDay));
+    public String timeFormatter(long totalMinutes) {
 
-            return ws;
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
 
-        } else throw new EmployeeNotFoundException();
+        return String.format("%02d:%02d", hours, minutes);
     }
 }
