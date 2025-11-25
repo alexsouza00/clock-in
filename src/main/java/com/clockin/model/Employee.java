@@ -3,6 +3,7 @@ package com.clockin.model;
 import com.clockin.model.enums.ContractType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -13,8 +14,10 @@ public class Employee{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotNull
     private String name;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ContractType contractType;
 
