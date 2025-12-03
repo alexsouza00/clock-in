@@ -2,6 +2,7 @@ package com.clockin.advice;
 
 import com.clockin.exceptions.DataBaseException;
 import com.clockin.exceptions.EmployeeNotFoundException;
+import com.clockin.exceptions.InvalidDataException;
 import com.clockin.exceptions.WorkdayFullException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,11 @@ public class EmployeeControllerExceptionHandler extends ResponseEntityExceptionH
     private ResponseEntity<RestErrorMessage> workdayFullExceptionHandler(WorkdayFullException exception){
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(InvalidDataException.class)
+    private ResponseEntity<RestErrorMessage> invalidDataExceptionHandler(InvalidDataException invalidDataException){
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.BAD_REQUEST, invalidDataException.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 }

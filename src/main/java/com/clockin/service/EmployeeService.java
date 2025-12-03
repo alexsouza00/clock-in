@@ -1,8 +1,11 @@
 package com.clockin.service;
 
+import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.exceptions.DataBaseException;
 import com.clockin.exceptions.EmployeeNotFoundException;
+import com.clockin.exceptions.InvalidDataException;
 import com.clockin.model.Employee;
+import com.clockin.model.enums.ContractType;
 import com.clockin.repository.EmployeeRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -35,10 +38,28 @@ public class EmployeeService {
         repository.save(employee);
     }
 
+    public void updateEmployee(Long id, EmployeeUpdateDto employeeUpdateDto) {
+
+        Employee employee = repository.findById(id).orElseThrow(EmployeeNotFoundException::new);
+        if (employeeUpdateDto.name() != null) {
+            employee.setName(employeeUpdateDto.name());
+        }
+        if (employeeUpdateDto.contractType() != null) {
+            if (employeeUpdateDto.contractType().toUpperCase().equals("CLT") ||
+                    employeeUpdateDto.contractType().toUpperCase().equals("PJ") ||
+                    employeeUpdateDto.contractType().toUpperCase().equals("ESTAGIO")) {
+                employee.setContractType(ContractType.valueOf(employeeUpdateDto.contractType().toUpperCase()));
+            } else {
+                throw new InvalidDataException("Select a valid contract type (CLT, PJ, ESTAGIO)");
+            }
+        }
+        repository.save(employee);
+    }
+
     public void deleteEmployeeById(Long employeeId) {
         try {
-            if(repository.existsById(employeeId))
-            repository.deleteById(employeeId);
+            if (repository.existsById(employeeId))
+                repository.deleteById(employeeId);
             else {
                 throw new EmployeeNotFoundException();
             }

@@ -1,5 +1,6 @@
 package com.clockin.controller;
 
+import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Employee;
 import com.clockin.service.EmployeeService;
@@ -43,6 +44,12 @@ public class EmployeeController {
     public ResponseEntity<String> registerEmployee(@RequestBody @Valid Employee employee) {
         employeeService.registerEmployee(employee);
         return ResponseEntity.status(HttpStatus.CREATED).body("\n" + "Employee successfully registered!");
+    }
+
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<String> updateEmployee(@PathVariable Long employeeId, @Valid @RequestBody EmployeeUpdateDto employeeUpdateDto){
+        employeeService.updateEmployee(employeeId, employeeUpdateDto);
+        return ResponseEntity.status(HttpStatus.OK).body("Employee Updated!");
     }
 
     @DeleteMapping("/{employeeId}")
