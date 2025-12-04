@@ -1,5 +1,6 @@
 package com.clockin.controller;
 
+import com.clockin.dto.request.EmployeeDto;
 import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Employee;
@@ -41,7 +42,7 @@ public class EmployeeController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> registerEmployee(@RequestBody @Valid Employee employee) {
+    public ResponseEntity<String> registerEmployee(@RequestBody @Valid EmployeeDto employee) {
         employeeService.registerEmployee(employee);
         return ResponseEntity.status(HttpStatus.CREATED).body("\n" + "Employee successfully registered!");
     }

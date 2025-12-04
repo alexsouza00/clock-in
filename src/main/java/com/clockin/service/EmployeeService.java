@@ -1,5 +1,6 @@
 package com.clockin.service;
 
+import com.clockin.dto.request.EmployeeDto;
 import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.exceptions.DataBaseException;
 import com.clockin.exceptions.EmployeeNotFoundException;
@@ -30,24 +31,33 @@ public class EmployeeService {
         Optional<Employee> employee = repository.findById(id);
         if (employee.isPresent()) {
             return employee.get();
-        } else
-            throw new EmployeeNotFoundException();
+        } else throw new EmployeeNotFoundException();
     }
 
-    public void registerEmployee(Employee employee) {
-        repository.save(employee);
+    public void registerEmployee(EmployeeDto employeeDto) {
+
+        if (employeeDto.contractType() != null) {
+            if (employeeDto.contractType().equalsIgnoreCase("CLT") || employeeDto.contractType().equalsIgnoreCase("PJ") || employeeDto.contractType().equalsIgnoreCase("ESTAGIO")) {
+                Employee employee = new Employee(employeeDto.name(), ContractType.valueOf(employeeDto.contractType().toUpperCase()));
+                repository.save(employee);
+            } else {
+                throw new InvalidDataException("Select a valid contract type (CLT, PJ, ESTAGIO)");
+            }
+        }
     }
 
     public void updateEmployee(Long id, EmployeeUpdateDto employeeUpdateDto) {
 
         Employee employee = repository.findById(id).orElseThrow(EmployeeNotFoundException::new);
+
+        if (employeeUpdateDto == null) {
+            throw new InvalidDataException("No values present");
+        }
         if (employeeUpdateDto.name() != null) {
             employee.setName(employeeUpdateDto.name());
         }
         if (employeeUpdateDto.contractType() != null) {
-            if (employeeUpdateDto.contractType().toUpperCase().equals("CLT") ||
-                    employeeUpdateDto.contractType().toUpperCase().equals("PJ") ||
-                    employeeUpdateDto.contractType().toUpperCase().equals("ESTAGIO")) {
+            if (employeeUpdateDto.contractType().equalsIgnoreCase("CLT") || employeeUpdateDto.contractType().equalsIgnoreCase("PJ") || employeeUpdateDto.contractType().equalsIgnoreCase("ESTAGIO")) {
                 employee.setContractType(ContractType.valueOf(employeeUpdateDto.contractType().toUpperCase()));
             } else {
                 throw new InvalidDataException("Select a valid contract type (CLT, PJ, ESTAGIO)");
@@ -58,8 +68,7 @@ public class EmployeeService {
 
     public void deleteEmployeeById(Long employeeId) {
         try {
-            if (repository.existsById(employeeId))
-                repository.deleteById(employeeId);
+            if (repository.existsById(employeeId)) repository.deleteById(employeeId);
             else {
                 throw new EmployeeNotFoundException();
             }
@@ -67,4 +76,5 @@ public class EmployeeService {
             throw new DataBaseException("The employee cannot be deleted because they have associated workday records. Employee ID: " + employeeId);
         }
     }
+
 }
