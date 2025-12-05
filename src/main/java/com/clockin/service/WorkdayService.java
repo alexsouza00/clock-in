@@ -2,7 +2,9 @@ package com.clockin.service;
 
 import com.clockin.dto.response.WorkStats;
 import com.clockin.exceptions.EmployeeNotFoundException;
+import com.clockin.exceptions.WorkdayException;
 import com.clockin.exceptions.WorkdayFullException;
+import com.clockin.model.Employee;
 import com.clockin.model.Workday;
 import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
@@ -40,6 +42,8 @@ public class WorkdayService {
     public void registerWorkday(Long employeeId) {
 
         if (employeeRepository.existsById(employeeId)) {
+
+            Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
             Optional<Workday> workday = findWorkday(employeeId, LocalDate.now());
 
             if (workday.isEmpty()) {
@@ -50,19 +54,31 @@ public class WorkdayService {
                 newWorkday.setDayOfTheWeek(workdayDate.getDayOfWeek().name());
                 newWorkday.setMorningCheckIn(LocalTime.now());
                 workdayRepository.save(newWorkday);
-            } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null) {
-                workday.get().setMorningCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
-                workday.get().setAfternoonCheckIn(LocalTime.now());
-                workdayRepository.save(workday.get());
-            } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
-                workday.get().setAfternoonCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null) {
-                throw new WorkdayFullException();
+            } else {
+                throw new WorkdayException("workday already recorded!");
             }
-        } else throw new EmployeeNotFoundException();
+        }
+    }
+
+    public void clockIn(Long employeeId) {
+
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
+        Optional<Workday> workday = findWorkday(employeeId, LocalDate.now());
+
+        if (workday.isEmpty()) {
+            throw new WorkdayException("No workdays recorded to be updated!");
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null) {
+            workday.get().setMorningCheckOut(LocalTime.now());
+            workdayRepository.save(workday.get());
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
+            workday.get().setAfternoonCheckIn(LocalTime.now());
+            workdayRepository.save(workday.get());
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
+            workday.get().setAfternoonCheckOut(LocalTime.now());
+            workdayRepository.save(workday.get());
+        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null) {
+            throw new WorkdayFullException();
+        }
     }
 
     public WorkStats workStats(Long employeeId) {
