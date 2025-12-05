@@ -37,11 +37,11 @@ public class EmployeeService {
     public void registerEmployee(EmployeeDto employeeDto) {
 
         if (employeeDto.contractType() != null) {
-            if (employeeDto.contractType().equalsIgnoreCase("CLT") || employeeDto.contractType().equalsIgnoreCase("PJ") || employeeDto.contractType().equalsIgnoreCase("ESTAGIO")) {
+            if (employeeDto.contractType().equalsIgnoreCase("CLT") || employeeDto.contractType().equalsIgnoreCase("ESTAGIO")) {
                 Employee employee = new Employee(employeeDto.name(), ContractType.valueOf(employeeDto.contractType().toUpperCase()));
                 repository.save(employee);
             } else {
-                throw new InvalidDataException("Select a valid contract type (CLT, PJ, ESTAGIO)");
+                throw new InvalidDataException("Select a valid contract type (CLT, ESTAGIO)");
             }
         }
     }
@@ -57,10 +57,10 @@ public class EmployeeService {
             employee.setName(employeeUpdateDto.name());
         }
         if (employeeUpdateDto.contractType() != null) {
-            if (employeeUpdateDto.contractType().equalsIgnoreCase("CLT") || employeeUpdateDto.contractType().equalsIgnoreCase("PJ") || employeeUpdateDto.contractType().equalsIgnoreCase("ESTAGIO")) {
+            if (employeeUpdateDto.contractType().equalsIgnoreCase("CLT") || employeeUpdateDto.contractType().equalsIgnoreCase("ESTAGIO")) {
                 employee.setContractType(ContractType.valueOf(employeeUpdateDto.contractType().toUpperCase()));
             } else {
-                throw new InvalidDataException("Select a valid contract type (CLT, PJ, ESTAGIO)");
+                throw new InvalidDataException("Select a valid contract type (CLT/ESTAGIO)");
             }
         }
         repository.save(employee);
