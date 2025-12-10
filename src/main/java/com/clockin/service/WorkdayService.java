@@ -1,14 +1,17 @@
 package com.clockin.service;
 
+import com.clockin.dto.request.WorkdayDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.exceptions.EmployeeNotFoundException;
 import com.clockin.exceptions.WorkdayException;
 import com.clockin.exceptions.WorkdayFullException;
 import com.clockin.model.Employee;
 import com.clockin.model.Workday;
+import com.clockin.model.enums.ContractType;
 import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.List;
@@ -39,27 +42,33 @@ public class WorkdayService {
         return workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
     }
 
+    @Transactional
     public void registerWorkday(Long employeeId) {
 
-        if (employeeRepository.existsById(employeeId)) {
+        LocalDate today = LocalDate.now();
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
+        Optional<Workday> workday = findWorkday(employeeId, today);
 
-            Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
-            Optional<Workday> workday = findWorkday(employeeId, LocalDate.now());
-
-            if (workday.isEmpty()) {
-                Workday newWorkday = new Workday();
-                LocalDate workdayDate = LocalDate.now();
-                newWorkday.setEmployee(employeeService.getEmployeeById(employeeId));
-                newWorkday.setWorkdayDate(workdayDate);
-                newWorkday.setDayOfTheWeek(workdayDate.getDayOfWeek().name());
-                newWorkday.setMorningCheckIn(LocalTime.now());
-                workdayRepository.save(newWorkday);
-            } else {
-                throw new WorkdayException("workday already recorded!");
-            }
+        if (workday.isPresent()) {
+            throw new WorkdayException("Workday already recorded!");
         }
+
+        Workday newWorkday = new Workday();
+        newWorkday.setEmployee(employeeService.getEmployeeById(employeeId));
+        newWorkday.setWorkdayDate(today);
+        newWorkday.setDayOfTheWeek(today.getDayOfWeek().name());
+
+        if (LocalTime.now().isAfter((LocalTime.of(12, 00)))) {
+            newWorkday.setAfternoonCheckIn(LocalTime.now());
+        } else {
+            newWorkday.setMorningCheckIn(LocalTime.now());
+        }
+
+        workdayRepository.save(newWorkday);
+
     }
 
+    @Transactional
     public void clockIn(Long employeeId) {
 
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
@@ -67,18 +76,53 @@ public class WorkdayService {
 
         if (workday.isEmpty()) {
             throw new WorkdayException("No workdays recorded to be updated!");
-        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null) {
-            workday.get().setMorningCheckOut(LocalTime.now());
-            workdayRepository.save(workday.get());
-        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
-            workday.get().setAfternoonCheckIn(LocalTime.now());
-            workdayRepository.save(workday.get());
-        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
-            workday.get().setAfternoonCheckOut(LocalTime.now());
-            workdayRepository.save(workday.get());
-        } else if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null) {
+        }
+
+        if ((workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null) || (workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null)) {
             throw new WorkdayFullException();
         }
+
+        if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null) {
+            throw new WorkdayFullException();
+        }
+
+        if (employee.getContractType().equals(ContractType.CLT)) {
+
+            if (workday.get().getMorningCheckIn() == null) {
+                workday.get().setAfternoonCheckOut(LocalTime.now());
+                workdayRepository.save(workday.get());
+            }
+
+            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null && workday.get().getAfternoonCheckIn() == null) {
+                workday.get().setMorningCheckOut(LocalTime.now());
+                workdayRepository.save(workday.get());
+            }
+
+            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
+                workday.get().setAfternoonCheckIn(LocalTime.now());
+                workdayRepository.save(workday.get());
+            }
+
+            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
+                workday.get().setAfternoonCheckOut(LocalTime.now());
+                workdayRepository.save(workday.get());
+            }
+        }
+
+        if (employee.getContractType().equals(ContractType.ESTAGIO)) {
+            if (workday.get().getMorningCheckIn() == null) {
+                workday.get().setAfternoonCheckOut(LocalTime.now());
+                workdayRepository.save(workday.get());
+            } else {
+                workday.get().setMorningCheckOut(LocalTime.now());
+                workdayRepository.save(workday.get());
+            }
+        }
+    }
+
+    public void updateWorkday(WorkdayDto workdayDto) {
+        Employee employee = employeeRepository.findById(workdayDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
+
     }
 
     public WorkStats workStats(Long employeeId) {
