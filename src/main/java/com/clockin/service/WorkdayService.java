@@ -123,6 +123,14 @@ public class WorkdayService {
     public void updateWorkday(WorkdayDto workdayDto) {
         Employee employee = employeeRepository.findById(workdayDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
 
+        Optional<Workday> workday = workdayRepository.findByEmployeeIdAndWorkdayDate(workdayDto.employeeId(), workdayDto.workdayDate());
+
+        if (workday.isPresent()) {
+            workday.get().setMorningCheckIn(workdayDto.newTime());
+            workdayRepository.save(workday.get());
+
+        }
+
     }
 
     public WorkStats workStats(Long employeeId) {

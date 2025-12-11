@@ -1,5 +1,6 @@
 package com.clockin.controller;
 
+import com.clockin.dto.request.WorkdayDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Workday;
 import com.clockin.service.WorkdayService;
@@ -35,4 +36,11 @@ public class WorkdayController {
         workdayService.clockIn(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body("Recorded time!");
     }
+
+    @PutMapping
+    public ResponseEntity<String> updateWorkday (@RequestBody WorkdayDto workdayDto){
+        workdayService.updateWorkday(workdayDto);
+        return ResponseEntity.status(HttpStatus.OK).body("Workday Updated!");
+    }
+
 }
