@@ -1,6 +1,6 @@
 package com.clockin.service;
 
-import com.clockin.dto.request.WorkdayDto;
+import com.clockin.dto.request.WorkdayUpdateDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.exceptions.EmployeeNotFoundException;
 import com.clockin.exceptions.WorkdayException;
@@ -10,6 +10,7 @@ import com.clockin.model.Workday;
 import com.clockin.model.enums.ContractType;
 import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
+import com.clockin.service.utils.WorkdayUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +22,13 @@ import java.util.Optional;
 public class WorkdayService {
 
     private final WorkdayRepository workdayRepository;
+    private final WorkdayUtils workdayUtils;
     private final EmployeeService employeeService;
     private final EmployeeRepository employeeRepository;
 
-    public WorkdayService(WorkdayRepository workdayRepository, EmployeeService employeeService, EmployeeRepository employeeRepository) {
+    public WorkdayService(WorkdayRepository workdayRepository, WorkdayUtils workdayUtils, EmployeeService employeeService, EmployeeRepository employeeRepository) {
         this.workdayRepository = workdayRepository;
+        this.workdayUtils = workdayUtils;
         this.employeeService = employeeService;
         this.employeeRepository = employeeRepository;
     }
@@ -120,16 +123,25 @@ public class WorkdayService {
         }
     }
 
-    public void updateWorkday(WorkdayDto workdayDto) {
-        Employee employee = employeeRepository.findById(workdayDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
+    public void updateWorkday(WorkdayUpdateDto workdayUpdateDto) {
 
-        Optional<Workday> workday = workdayRepository.findByEmployeeIdAndWorkdayDate(workdayDto.employeeId(), workdayDto.workdayDate());
+        Employee employee = employeeRepository.findById(workdayUpdateDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
 
-        if (workday.isPresent()) {
-            workday.get().setMorningCheckIn(workdayDto.newTime());
-            workdayRepository.save(workday.get());
+        Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(workdayUpdateDto.employeeId(), workdayUpdateDto.workdayDate()).orElseThrow(() -> new WorkdayException("Workday not found"));
 
+        workdayUtils.validateNewTime(workdayUpdateDto.workShift(), workdayUpdateDto.newTime(), workday);
+
+        switch (workdayUpdateDto.workShift()) {
+            case MORNING_CHECK_IN -> workday.setMorningCheckIn(workdayUpdateDto.newTime());
+
+            case MORNING_CHECK_OUT -> workday.setMorningCheckOut(workdayUpdateDto.newTime());
+
+            case AFTERNOON_CHECK_IN -> workday.setAfternoonCheckIn(workdayUpdateDto.newTime());
+
+            case AFTERNOON_CHECK_OUT -> workday.setAfternoonCheckOut(workdayUpdateDto.newTime());
         }
+
+        workdayRepository.save(workday);
 
     }
 
@@ -176,3 +188,4 @@ public class WorkdayService {
         return String.format("%02d:%02d", hours, minutes);
     }
 }
+

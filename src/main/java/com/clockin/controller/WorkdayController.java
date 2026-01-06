@@ -1,7 +1,6 @@
 package com.clockin.controller;
 
-import com.clockin.dto.request.WorkdayDto;
-import com.clockin.dto.response.WorkStats;
+import com.clockin.dto.request.WorkdayUpdateDto;
 import com.clockin.model.Workday;
 import com.clockin.service.WorkdayService;
 import org.springframework.http.HttpStatus;
@@ -38,8 +37,8 @@ public class WorkdayController {
     }
 
     @PutMapping
-    public ResponseEntity<String> updateWorkday (@RequestBody WorkdayDto workdayDto){
-        workdayService.updateWorkday(workdayDto);
+    public ResponseEntity<String> updateWorkday (@RequestBody WorkdayUpdateDto workdayUpdateDto){
+        workdayService.updateWorkday(workdayUpdateDto);
         return ResponseEntity.status(HttpStatus.OK).body("Workday Updated!");
     }
 
