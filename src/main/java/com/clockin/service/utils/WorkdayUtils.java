@@ -5,6 +5,7 @@ import com.clockin.exceptions.WorkdayException;
 import com.clockin.model.Workday;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalTime;
 
 @Component
@@ -47,5 +48,15 @@ public class WorkdayUtils {
             }
         }
 
+    }
+
+
+
+    public static String formatMinutesToHours(long totalMinutes) {
+
+        long hours = totalMinutes / 60;
+        long minutes = totalMinutes % 60;
+
+        return String.format("%02d:%02d", hours, minutes);
     }
 }

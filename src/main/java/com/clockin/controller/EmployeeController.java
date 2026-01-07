@@ -37,7 +37,7 @@ public class EmployeeController {
 
     @GetMapping("/{employeeId}/stats")
     public ResponseEntity<WorkStats> getWorkdays(@PathVariable Long employeeId) {
-        WorkStats workdays = workdayService.workStats(employeeId);
+        WorkStats workdays = workdayService.getWorkStatsByEmployee(employeeId);
         return ResponseEntity.ok().body(workdays);
     }
 

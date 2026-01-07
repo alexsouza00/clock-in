@@ -18,6 +18,8 @@ import java.time.*;
 import java.util.List;
 import java.util.Optional;
 
+import static com.clockin.service.utils.WorkdayUtils.formatMinutesToHours;
+
 @Service
 public class WorkdayService {
 
@@ -45,82 +47,49 @@ public class WorkdayService {
         return workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
     }
 
-    @Transactional
+   @Transactional
     public void registerWorkday(Long employeeId) {
 
         LocalDate today = LocalDate.now();
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
-        Optional<Workday> workday = findWorkday(employeeId, today);
+        LocalTime now = LocalTime.now();
 
-        if (workday.isPresent()) {
-            throw new WorkdayException("Workday already recorded!");
-        }
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
 
-        Workday newWorkday = new Workday();
-        newWorkday.setEmployee(employeeService.getEmployeeById(employeeId));
-        newWorkday.setWorkdayDate(today);
-        newWorkday.setDayOfTheWeek(today.getDayOfWeek().name());
+        Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, today)
+                .orElseGet(() -> {
+                    Workday newDay = new Workday();
+                    newDay.setEmployee(employee);
+                    newDay.setWorkdayDate(today);
+                    newDay.setDayOfTheWeek(today.getDayOfWeek().name());
+                    return workdayRepository.save(newDay);
+                });
 
-        if (LocalTime.now().isAfter((LocalTime.of(12, 00)))) {
-            newWorkday.setAfternoonCheckIn(LocalTime.now());
-        } else {
-            newWorkday.setMorningCheckIn(LocalTime.now());
-        }
-
-        workdayRepository.save(newWorkday);
+        fillHoursWorked(workday, employee.getContractType(), now);
+        workdayRepository.save(workday);
 
     }
 
-    @Transactional
-    public void clockIn(Long employeeId) {
+    private void fillHoursWorked(Workday workday, ContractType type, LocalTime now) {
 
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
-        Optional<Workday> workday = findWorkday(employeeId, LocalDate.now());
+        LocalTime MIDDAY = LocalTime.NOON;
 
-        if (workday.isEmpty()) {
-            throw new WorkdayException("No workdays recorded to be updated!");
+        if (type == ContractType.CLT) {
+            if (workday.getMorningCheckIn() == null) workday.setMorningCheckIn(now);
+            else if (workday.getMorningCheckOut() == null) workday.setMorningCheckOut(now);
+            else if (workday.getAfternoonCheckIn() == null) workday.setAfternoonCheckIn(now);
+            else if (workday.getAfternoonCheckOut() == null) workday.setAfternoonCheckOut(now);
+            else throw new WorkdayFullException();
+        } else if (type == ContractType.ESTAGIO) {
+            if(now.isBefore(MIDDAY)){
+            if (workday.getMorningCheckIn() == null) workday.setMorningCheckIn(now);
+            else if (workday.getMorningCheckOut() == null) workday.setMorningCheckOut(now);
+            else throw new WorkdayFullException();}
+            else if  (workday.getAfternoonCheckIn() == null) workday.setAfternoonCheckIn(now);
+            else if (workday.getAfternoonCheckOut() == null) workday.setAfternoonCheckOut(now);
+            else throw new WorkdayFullException();
         }
 
-        if ((workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null) || (workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null)) {
-            throw new WorkdayFullException();
-        }
-
-        if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() != null) {
-            throw new WorkdayFullException();
-        }
-
-        if (employee.getContractType().equals(ContractType.CLT)) {
-
-            if (workday.get().getMorningCheckIn() == null) {
-                workday.get().setAfternoonCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            }
-
-            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() == null && workday.get().getAfternoonCheckIn() == null) {
-                workday.get().setMorningCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            }
-
-            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() == null && workday.get().getAfternoonCheckOut() == null) {
-                workday.get().setAfternoonCheckIn(LocalTime.now());
-                workdayRepository.save(workday.get());
-            }
-
-            if (workday.get().getMorningCheckIn() != null && workday.get().getMorningCheckOut() != null && workday.get().getAfternoonCheckIn() != null && workday.get().getAfternoonCheckOut() == null) {
-                workday.get().setAfternoonCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            }
-        }
-
-        if (employee.getContractType().equals(ContractType.ESTAGIO)) {
-            if (workday.get().getMorningCheckIn() == null) {
-                workday.get().setAfternoonCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            } else {
-                workday.get().setMorningCheckOut(LocalTime.now());
-                workdayRepository.save(workday.get());
-            }
-        }
     }
 
     public void updateWorkday(WorkdayUpdateDto workdayUpdateDto) {
@@ -145,7 +114,7 @@ public class WorkdayService {
 
     }
 
-    public WorkStats workStats(Long employeeId) {
+    public WorkStats getWorkStatsByEmployee(Long employeeId) {
 
         if (!employeeRepository.existsById(employeeId)) {
             throw new EmployeeNotFoundException();
@@ -161,8 +130,10 @@ public class WorkdayService {
         long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(this::timeWorked).sum();
         long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
 
-        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(), timeFormatter(minutesWorkedInTheMonth), timeFormatter(minutesWorkedInTheWeek), timeFormatter(minutesWorkedToday));
-
+        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
+                formatMinutesToHours(minutesWorkedInTheMonth),
+                formatMinutesToHours(minutesWorkedInTheWeek),
+                formatMinutesToHours(minutesWorkedToday));
     }
 
     public long timeWorked(Workday day) {
@@ -178,14 +149,6 @@ public class WorkdayService {
         }
         return morningDuration.toMinutes() + afternoonDuration.toMinutes();
 
-    }
-
-    public String timeFormatter(long totalMinutes) {
-
-        long hours = totalMinutes / 60;
-        long minutes = totalMinutes % 60;
-
-        return String.format("%02d:%02d", hours, minutes);
     }
 }
 
