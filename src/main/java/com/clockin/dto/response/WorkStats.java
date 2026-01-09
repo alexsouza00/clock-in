@@ -7,13 +7,14 @@ public class WorkStats {
     private String hoursWorkedInTheMonth;
     private String hoursWorkedInTheWeek;
     private String hoursWorkedInTheDay;
+    private String lateHoursInTheMonth;
 
-
-    public WorkStats(String name, String hoursWorkedInTheMonth, String hoursWorkedInTheWeek, String hoursWorkedInTheDay) {
+    public WorkStats(String name, String hoursWorkedInTheMonth, String hoursWorkedInTheWeek, String hoursWorkedInTheDay, String lateHoursInTheMonth) {
         this.name = name;
         this.hoursWorkedInTheMonth = hoursWorkedInTheMonth;
         this.hoursWorkedInTheWeek = hoursWorkedInTheWeek;
         this.hoursWorkedInTheDay = hoursWorkedInTheDay;
+        this.lateHoursInTheMonth = lateHoursInTheMonth;
     }
 
     public String getName() {
@@ -46,5 +47,13 @@ public class WorkStats {
 
     public void setHoursWorkedInTheDay(String hoursWorkedInTheDay) {
         this.hoursWorkedInTheDay = hoursWorkedInTheDay;
+    }
+
+    public String getLateHoursInTheMonth() {
+        return lateHoursInTheMonth;
+    }
+
+    public void setLateHoursInTheMonth(String lateHoursInTheMonth) {
+        this.lateHoursInTheMonth = lateHoursInTheMonth;
     }
 }

@@ -47,7 +47,7 @@ public class WorkdayService {
         return workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
     }
 
-   @Transactional
+    @Transactional
     public void registerWorkday(Long employeeId) {
 
         LocalDate today = LocalDate.now();
@@ -81,11 +81,11 @@ public class WorkdayService {
             else if (workday.getAfternoonCheckOut() == null) workday.setAfternoonCheckOut(now);
             else throw new WorkdayFullException();
         } else if (type == ContractType.ESTAGIO) {
-            if(now.isBefore(MIDDAY)){
-            if (workday.getMorningCheckIn() == null) workday.setMorningCheckIn(now);
-            else if (workday.getMorningCheckOut() == null) workday.setMorningCheckOut(now);
-            else throw new WorkdayFullException();}
-            else if  (workday.getAfternoonCheckIn() == null) workday.setAfternoonCheckIn(now);
+            if (now.isBefore(MIDDAY)) {
+                if (workday.getMorningCheckIn() == null) workday.setMorningCheckIn(now);
+                else if (workday.getMorningCheckOut() == null) workday.setMorningCheckOut(now);
+                else throw new WorkdayFullException();
+            } else if (workday.getAfternoonCheckIn() == null) workday.setAfternoonCheckIn(now);
             else if (workday.getAfternoonCheckOut() == null) workday.setAfternoonCheckOut(now);
             else throw new WorkdayFullException();
         }
@@ -130,25 +130,47 @@ public class WorkdayService {
         long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(this::timeWorked).sum();
         long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
 
+        long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::lateHours).sum();
+
         return new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
                 formatMinutesToHours(minutesWorkedInTheMonth),
                 formatMinutesToHours(minutesWorkedInTheWeek),
-                formatMinutesToHours(minutesWorkedToday));
+                formatMinutesToHours(minutesWorkedToday),
+                formatMinutesToHours(minutesLateInTheMonth));
     }
 
     public long timeWorked(Workday day) {
 
-        Duration morningDuration = Duration.ofMinutes(0);
-        Duration afternoonDuration = Duration.ofMinutes(0);
+        long totalMinutes = 0;
 
         if (day.getMorningCheckIn() != null && day.getMorningCheckOut() != null) {
-            morningDuration = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut());
+            long minutes = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
         }
         if (day.getAfternoonCheckIn() != null && day.getAfternoonCheckOut() != null) {
-            afternoonDuration = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut());
+            long minutes = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
         }
-        return morningDuration.toMinutes() + afternoonDuration.toMinutes();
 
+        return totalMinutes;
+    }
+
+    public long lateHours(Workday day) {
+
+        LocalTime morningCheckIn = LocalTime.of(8, 00);
+        LocalTime afternoonCheckIn = LocalTime.of(13, 00);
+        long totalMinutes = 0;
+
+        if (day.getMorningCheckIn() != null) {
+            long minutes = Duration.between(morningCheckIn, day.getMorningCheckIn()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+        if (day.getAfternoonCheckIn() != null) {
+            long minutes = Duration.between(afternoonCheckIn, day.getAfternoonCheckIn()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+
+        return totalMinutes;
     }
 }
 

@@ -36,9 +36,9 @@ public class EmployeeController {
     }
 
     @GetMapping("/{employeeId}/stats")
-    public ResponseEntity<WorkStats> getWorkdays(@PathVariable Long employeeId) {
-        WorkStats workdays = workdayService.getWorkStatsByEmployee(employeeId);
-        return ResponseEntity.ok().body(workdays);
+    public ResponseEntity<WorkStats> getWorkStatsByEmployeeId(@PathVariable Long employeeId) {
+        WorkStats workStats = workdayService.getWorkStatsByEmployee(employeeId);
+        return ResponseEntity.ok().body(workStats);
     }
 
     @PostMapping()
