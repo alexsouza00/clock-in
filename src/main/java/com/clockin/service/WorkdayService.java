@@ -15,8 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.clockin.service.utils.WorkdayUtils.formatMinutesToHours;
 
@@ -53,17 +52,15 @@ public class WorkdayService {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(EmployeeNotFoundException::new);
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
 
-        Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, today)
-                .orElseGet(() -> {
-                    Workday newDay = new Workday();
-                    newDay.setEmployee(employee);
-                    newDay.setWorkdayDate(today);
-                    newDay.setDayOfTheWeek(today.getDayOfWeek().name());
-                    return workdayRepository.save(newDay);
-                });
+        Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, today).orElseGet(() -> {
+            Workday newDay = new Workday();
+            newDay.setEmployee(employee);
+            newDay.setWorkdayDate(today);
+            newDay.setDayOfTheWeek(today.getDayOfWeek().name());
+            return workdayRepository.save(newDay);
+        });
 
         fillHoursWorked(workday, employee.getContractType(), now);
         workdayRepository.save(workday);
@@ -131,12 +128,10 @@ public class WorkdayService {
         long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
 
         long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::lateHours).sum();
+        List<LocalDate> missingDays = missingDays(allWorkdays);
 
-        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
-                formatMinutesToHours(minutesWorkedInTheMonth),
-                formatMinutesToHours(minutesWorkedInTheWeek),
-                formatMinutesToHours(minutesWorkedToday),
-                formatMinutesToHours(minutesLateInTheMonth));
+        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(), formatMinutesToHours(minutesWorkedInTheMonth), formatMinutesToHours(minutesWorkedInTheWeek), formatMinutesToHours(minutesWorkedToday), formatMinutesToHours(minutesLateInTheMonth),
+                missingDays.size());
     }
 
     public long timeWorked(Workday day) {
@@ -157,8 +152,8 @@ public class WorkdayService {
 
     public long lateHours(Workday day) {
 
-        LocalTime morningCheckIn = LocalTime.of(8, 00);
-        LocalTime afternoonCheckIn = LocalTime.of(13, 00);
+        LocalTime morningCheckIn = LocalTime.of(8, 0);
+        LocalTime afternoonCheckIn = LocalTime.of(13, 0);
         long totalMinutes = 0;
 
         if (day.getMorningCheckIn() != null) {
@@ -171,6 +166,30 @@ public class WorkdayService {
         }
 
         return totalMinutes;
+    }
+
+    public List<LocalDate> missingDays(List<Workday> workdays) {
+
+        List<LocalDate> missingDays = new ArrayList<>();
+        Set<LocalDate> workedDates = new HashSet<>();
+
+        for (Workday wd : workdays) {
+            workedDates.add(wd.getWorkdayDate());
+        }
+
+        LocalDate date = LocalDate.now().withDayOfMonth(1);
+        LocalDate today = LocalDate.now();
+
+        while (date.isBefore(today)) {
+
+            if (!date.getDayOfWeek().equals(DayOfWeek.SATURDAY) && !date.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+                if (!workedDates.contains(date)) {
+                    missingDays.add(date);
+                }
+            }
+            date = date.plusDays(1);
+        }
+        return missingDays;
     }
 }
 
