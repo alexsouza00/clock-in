@@ -126,11 +126,18 @@ public class WorkdayService {
         long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(this::timeWorked).sum();
         long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(this::timeWorked).sum();
         long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
-
+        long extraMinutesWorkedInTheMonth = extraHours(minutesWorkedInTheMonth);
         long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::lateHours).sum();
+
         List<LocalDate> missingDays = missingDays(allWorkdays);
 
-        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(), formatMinutesToHours(minutesWorkedInTheMonth), formatMinutesToHours(minutesWorkedInTheWeek), formatMinutesToHours(minutesWorkedToday), formatMinutesToHours(minutesLateInTheMonth),
+
+        return new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
+                formatMinutesToHours(minutesWorkedInTheMonth),
+                formatMinutesToHours(minutesWorkedInTheWeek),
+                formatMinutesToHours(minutesWorkedToday),
+                formatMinutesToHours(extraMinutesWorkedInTheMonth),
+                formatMinutesToHours(minutesLateInTheMonth),
                 missingDays.size());
     }
 
@@ -166,6 +173,10 @@ public class WorkdayService {
         }
 
         return totalMinutes;
+    }
+
+    public long extraHours(long minutesWorkedInTheMonth) {
+        return Math.max(0, minutesWorkedInTheMonth - 9600);
     }
 
     public List<LocalDate> missingDays(List<Workday> workdays) {
