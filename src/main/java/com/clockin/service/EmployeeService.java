@@ -23,7 +23,7 @@ public class EmployeeService {
         this.repository = repository;
     }
 
-    public List<Employee> getEmployees() {
+    public List<Employee> getAllEmployees() {
         return repository.findAll();
     }
 

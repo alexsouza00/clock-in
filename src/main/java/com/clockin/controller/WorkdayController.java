@@ -20,7 +20,7 @@ public class WorkdayController {
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<List<Workday>> getAllWorkdaysByEmployee(@PathVariable Long employeeId){
+    public ResponseEntity<List<Workday>> getAllWorkdaysByEmployeeId(@PathVariable Long employeeId){
             return ResponseEntity.ok().body(workdayService.getAllWorkdaysByEmployee(employeeId));
     }
 

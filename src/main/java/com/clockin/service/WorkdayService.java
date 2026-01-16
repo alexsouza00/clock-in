@@ -8,7 +8,6 @@ import com.clockin.exceptions.WorkdayFullException;
 import com.clockin.model.Employee;
 import com.clockin.model.Workday;
 import com.clockin.model.enums.ContractType;
-import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
 import com.clockin.service.utils.WorkdayUtils;
 import org.springframework.stereotype.Service;
@@ -23,23 +22,18 @@ import static com.clockin.service.utils.WorkdayUtils.formatMinutesToHours;
 public class WorkdayService {
 
     private final WorkdayRepository workdayRepository;
-    private final WorkdayUtils workdayUtils;
     private final EmployeeService employeeService;
-    private final EmployeeRepository employeeRepository;
+    private final WorkdayUtils workdayUtils;
 
-    public WorkdayService(WorkdayRepository workdayRepository, WorkdayUtils workdayUtils, EmployeeService employeeService, EmployeeRepository employeeRepository) {
+    public WorkdayService(WorkdayRepository workdayRepository, WorkdayUtils workdayUtils, EmployeeService employeeService) {
         this.workdayRepository = workdayRepository;
         this.workdayUtils = workdayUtils;
         this.employeeService = employeeService;
-        this.employeeRepository = employeeRepository;
     }
 
     public List<Workday> getAllWorkdaysByEmployee(Long employeeId) {
-
-        if (employeeRepository.existsById(employeeId)) {
-            return workdayRepository.findByEmployeeId(employeeId);
-        } else throw new EmployeeNotFoundException();
-
+        Employee employee = employeeService.getEmployeeById(employeeId);
+        return workdayRepository.findByEmployeeId(employeeId);
     }
 
     public Optional<Workday> findWorkday(Long employeeId, LocalDate localdate) {
@@ -50,9 +44,13 @@ public class WorkdayService {
     public void registerWorkday(Long employeeId) {
 
         LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
 
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
+        if (today.getDayOfWeek().equals(DayOfWeek.SATURDAY) || today.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            throw new WorkdayException("You Can't create a workday on weekends!");
+        }
+
+        LocalTime now = LocalTime.now();
+        Employee employee = employeeService.getEmployeeById(employeeId);
 
         Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, today).orElseGet(() -> {
             Workday newDay = new Workday();
@@ -91,8 +89,7 @@ public class WorkdayService {
 
     public void updateWorkday(WorkdayUpdateDto workdayUpdateDto) {
 
-        Employee employee = employeeRepository.findById(workdayUpdateDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
-
+        Employee employee = employeeService.getEmployeeById(workdayUpdateDto.employeeId());
         Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(workdayUpdateDto.employeeId(), workdayUpdateDto.workdayDate()).orElseThrow(() -> new WorkdayException("Workday not found"));
 
         workdayUtils.validateNewTime(workdayUpdateDto.workShift(), workdayUpdateDto.newTime(), workday);
@@ -113,7 +110,7 @@ public class WorkdayService {
 
     public WorkStats getWorkStatsByEmployee(Long employeeId) {
 
-        if (!employeeRepository.existsById(employeeId)) {
+        if (employeeService.getEmployeeById(employeeId) == null) {
             throw new EmployeeNotFoundException();
         }
 

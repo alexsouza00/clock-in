@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record WorkdayUpdateDto(
-
-        @NotNull Long employeeId, @NotNull LocalDate workdayDate, @NotNull WorkShift workShift, @NotNull LocalTime newTime) {
+public record WorkdayUpdateDto(@NotNull Long employeeId, @NotNull LocalDate workdayDate,
+                               @NotNull WorkShift workShift, @NotNull LocalTime newTime) {
 }
