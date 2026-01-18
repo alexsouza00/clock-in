@@ -2,7 +2,6 @@ package com.clockin.service;
 
 import com.clockin.dto.request.WorkdayUpdateDto;
 import com.clockin.dto.response.WorkStats;
-import com.clockin.exceptions.EmployeeNotFoundException;
 import com.clockin.exceptions.WorkdayException;
 import com.clockin.exceptions.WorkdayFullException;
 import com.clockin.model.Employee;
@@ -60,12 +59,12 @@ public class WorkdayService {
             return workdayRepository.save(newDay);
         });
 
-        fillHoursWorked(workday, employee.getContractType(), now);
+        processPunch(workday, employee.getContractType(), now);
         workdayRepository.save(workday);
 
     }
 
-    private void fillHoursWorked(Workday workday, ContractType type, LocalTime now) {
+    private void processPunch(Workday workday, ContractType type, LocalTime now) {
 
         LocalTime MIDDAY = LocalTime.NOON;
 
@@ -110,9 +109,7 @@ public class WorkdayService {
 
     public WorkStats getWorkStatsByEmployee(Long employeeId) {
 
-        if (employeeService.getEmployeeById(employeeId) == null) {
-            throw new EmployeeNotFoundException();
-        }
+        Employee employee = employeeService.getEmployeeById(employeeId);
 
         List<Workday> allWorkdays = workdayRepository.findByEmployeeId(employeeId);
 

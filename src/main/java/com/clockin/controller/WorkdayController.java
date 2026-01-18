@@ -24,7 +24,7 @@ public class WorkdayController {
             return ResponseEntity.ok().body(workdayService.getAllWorkdaysByEmployee(employeeId));
     }
 
-    @PostMapping("/{employeeId}")
+    @PostMapping("/punch/{employeeId}")
     public ResponseEntity<String> registerWorkday(@PathVariable Long employeeId){
         workdayService.registerWorkday(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body("Recorded time!");

@@ -1,6 +1,6 @@
 package com.clockin.controller;
 
-import com.clockin.dto.request.EmployeeDto;
+import com.clockin.dto.request.EmployeeRequest;
 import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.dto.response.WorkStats;
 import com.clockin.model.Employee;
@@ -35,14 +35,14 @@ public class EmployeeController {
         return ResponseEntity.ok().body(employeeService.getEmployeeById(employeeId));
     }
 
-    @GetMapping("/{employeeId}/stats")
+    @GetMapping("/stats/{employeeId}")
     public ResponseEntity<WorkStats> getWorkStatsByEmployeeId(@PathVariable Long employeeId) {
         WorkStats workStats = workdayService.getWorkStatsByEmployee(employeeId);
         return ResponseEntity.ok().body(workStats);
     }
 
     @PostMapping()
-    public ResponseEntity<String> registerEmployee(@RequestBody @Valid EmployeeDto employee) {
+    public ResponseEntity<String> registerEmployee(@RequestBody @Valid EmployeeRequest employee) {
         employeeService.registerEmployee(employee);
         return ResponseEntity.status(HttpStatus.CREATED).body("\n" + "Employee successfully registered!");
     }

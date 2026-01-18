@@ -1,6 +1,6 @@
 package com.clockin.service;
 
-import com.clockin.dto.request.EmployeeDto;
+import com.clockin.dto.request.EmployeeRequest;
 import com.clockin.dto.request.EmployeeUpdateDto;
 import com.clockin.exceptions.DataBaseException;
 import com.clockin.exceptions.EmployeeNotFoundException;
@@ -34,7 +34,7 @@ public class EmployeeService {
         } else throw new EmployeeNotFoundException();
     }
 
-    public void registerEmployee(EmployeeDto employeeDto) {
+    public void registerEmployee(EmployeeRequest employeeDto) {
 
         if (employeeDto.contractType() != null) {
             if (employeeDto.contractType().equalsIgnoreCase("CLT") || employeeDto.contractType().equalsIgnoreCase("ESTAGIO")) {
