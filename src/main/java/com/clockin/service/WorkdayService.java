@@ -117,11 +117,11 @@ public class WorkdayService {
         Month currentMonth = LocalDate.now().getMonth();
         LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() % 7);
 
-        long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(this::timeWorked).sum();
-        long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(this::timeWorked).sum();
-        long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::timeWorked).sum();
+        long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(Workday::timeWorked).sum();
+        long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(Workday::timeWorked).sum();
+        long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::timeWorked).sum();
         long extraMinutesWorkedInTheMonth = extraHours(minutesWorkedInTheMonth);
-        long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(this::lateHours).sum();
+        long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::lateHours).sum();
 
         List<LocalDate> missingDays = missingDays(allWorkdays);
 
@@ -133,40 +133,6 @@ public class WorkdayService {
                 formatMinutesToHours(extraMinutesWorkedInTheMonth),
                 formatMinutesToHours(minutesLateInTheMonth),
                 missingDays.size());
-    }
-
-    public long timeWorked(Workday day) {
-
-        long totalMinutes = 0;
-
-        if (day.getMorningCheckIn() != null && day.getMorningCheckOut() != null) {
-            long minutes = Duration.between(day.getMorningCheckIn(), day.getMorningCheckOut()).toMinutes();
-            totalMinutes += Math.max(0, minutes);
-        }
-        if (day.getAfternoonCheckIn() != null && day.getAfternoonCheckOut() != null) {
-            long minutes = Duration.between(day.getAfternoonCheckIn(), day.getAfternoonCheckOut()).toMinutes();
-            totalMinutes += Math.max(0, minutes);
-        }
-
-        return totalMinutes;
-    }
-
-    public long lateHours(Workday day) {
-
-        LocalTime morningCheckIn = LocalTime.of(8, 0);
-        LocalTime afternoonCheckIn = LocalTime.of(13, 0);
-        long totalMinutes = 0;
-
-        if (day.getMorningCheckIn() != null) {
-            long minutes = Duration.between(morningCheckIn, day.getMorningCheckIn()).toMinutes();
-            totalMinutes += Math.max(0, minutes);
-        }
-        if (day.getAfternoonCheckIn() != null) {
-            long minutes = Duration.between(afternoonCheckIn, day.getAfternoonCheckIn()).toMinutes();
-            totalMinutes += Math.max(0, minutes);
-        }
-
-        return totalMinutes;
     }
 
     public long extraHours(long minutesWorkedInTheMonth) {

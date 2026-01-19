@@ -3,6 +3,7 @@ package com.clockin.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -96,6 +97,40 @@ public class Workday {
 
     public void setAfternoonCheckOut(LocalTime afternoonCheckOut) {
         this.afternoonCheckOut = afternoonCheckOut;
+    }
+
+    public long timeWorked() {
+
+        long totalMinutes = 0;
+
+        if (this.getMorningCheckIn() != null && this.getMorningCheckOut() != null) {
+            long minutes = Duration.between(this.getMorningCheckIn(), this.getMorningCheckOut()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+        if (this.getAfternoonCheckIn() != null && this.getAfternoonCheckOut() != null) {
+            long minutes = Duration.between(this.getAfternoonCheckIn(), this.getAfternoonCheckOut()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+
+        return totalMinutes;
+    }
+
+    public long lateHours() {
+
+        LocalTime morningCheckIn = LocalTime.of(8, 0);
+        LocalTime afternoonCheckIn = LocalTime.of(13, 0);
+        long totalMinutes = 0;
+
+        if (this.getMorningCheckIn() != null) {
+            long minutes = Duration.between(morningCheckIn, this.getMorningCheckIn()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+        if (this.getAfternoonCheckIn() != null) {
+            long minutes = Duration.between(afternoonCheckIn, this.getAfternoonCheckIn()).toMinutes();
+            totalMinutes += Math.max(0, minutes);
+        }
+
+        return totalMinutes;
     }
 
     @Override
