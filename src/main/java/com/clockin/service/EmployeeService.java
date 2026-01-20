@@ -1,7 +1,8 @@
 package com.clockin.service;
 
-import com.clockin.dto.request.EmployeeRequest;
+import com.clockin.dto.request.EmployeeCreateDto;
 import com.clockin.dto.request.EmployeeUpdateDto;
+import com.clockin.dto.response.EmployeeResponseDto;
 import com.clockin.exceptions.DataBaseException;
 import com.clockin.exceptions.EmployeeNotFoundException;
 import com.clockin.exceptions.InvalidDataException;
@@ -12,7 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -23,18 +24,22 @@ public class EmployeeService {
         this.repository = repository;
     }
 
-    public List<Employee> getAllEmployees() {
-        return repository.findAll();
+    public List<EmployeeResponseDto> getAllEmployees() {
+        return repository.findAll().stream()
+                .map(EmployeeResponseDto::new)
+                .collect(Collectors.toList());
     }
 
     public Employee getEmployeeById(Long id) {
-        Optional<Employee> employee = repository.findById(id);
-        if (employee.isPresent()) {
-            return employee.get();
-        } else throw new EmployeeNotFoundException();
+        return repository.findById(id).orElseThrow(EmployeeNotFoundException::new);
     }
 
-    public void registerEmployee(EmployeeRequest employeeDto) {
+    public EmployeeResponseDto getEmployeeByIdController(Long id) {
+        Employee employee = getEmployeeById(id);
+        return new EmployeeResponseDto(employee);
+    }
+
+    public void registerEmployee(EmployeeCreateDto employeeDto) {
 
         if (employeeDto.contractType() != null) {
             if (employeeDto.contractType().equalsIgnoreCase("CLT") || employeeDto.contractType().equalsIgnoreCase("ESTAGIO")) {

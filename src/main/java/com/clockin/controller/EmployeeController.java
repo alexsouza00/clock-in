@@ -1,9 +1,9 @@
 package com.clockin.controller;
 
-import com.clockin.dto.request.EmployeeRequest;
+import com.clockin.dto.request.EmployeeCreateDto;
 import com.clockin.dto.request.EmployeeUpdateDto;
+import com.clockin.dto.response.EmployeeResponseDto;
 import com.clockin.dto.response.WorkStats;
-import com.clockin.model.Employee;
 import com.clockin.service.EmployeeService;
 import com.clockin.service.WorkdayService;
 import jakarta.validation.Valid;
@@ -26,13 +26,13 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
         return ResponseEntity.ok().body(employeeService.getAllEmployees());
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId) {
-        return ResponseEntity.ok().body(employeeService.getEmployeeById(employeeId));
+    public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable Long employeeId) {
+        return ResponseEntity.ok().body(employeeService.getEmployeeByIdController(employeeId));
     }
 
     @GetMapping("/stats/{employeeId}")
@@ -42,7 +42,7 @@ public class EmployeeController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> registerEmployee(@RequestBody @Valid EmployeeRequest employee) {
+    public ResponseEntity<String> registerEmployee(@RequestBody @Valid EmployeeCreateDto employee) {
         employeeService.registerEmployee(employee);
         return ResponseEntity.status(HttpStatus.CREATED).body("\n" + "Employee successfully registered!");
     }
