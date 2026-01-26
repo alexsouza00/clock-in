@@ -13,7 +13,7 @@ public class WorkdayUtils {
 
     private static final LocalTime MIDDAY = LocalTime.NOON;
 
-    public void validateNewTime(WorkShift shift, LocalTime newTime, Workday workday) {
+    public static void validateNewTime(WorkShift shift, LocalTime newTime, Workday workday) {
 
         switch (shift) {
 

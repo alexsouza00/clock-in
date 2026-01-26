@@ -22,21 +22,15 @@ public class WorkdayService {
 
     private final WorkdayRepository workdayRepository;
     private final EmployeeService employeeService;
-    private final WorkdayUtils workdayUtils;
 
-    public WorkdayService(WorkdayRepository workdayRepository, WorkdayUtils workdayUtils, EmployeeService employeeService) {
+    public WorkdayService(WorkdayRepository workdayRepository, EmployeeService employeeService) {
         this.workdayRepository = workdayRepository;
-        this.workdayUtils = workdayUtils;
         this.employeeService = employeeService;
     }
 
-    public List<Workday> getAllWorkdaysByEmployee(Long employeeId) {
+    public List<Workday> getAllWorkdaysByEmployeeId(Long employeeId) {
         Employee employee = employeeService.getEmployeeById(employeeId);
         return workdayRepository.findByEmployeeId(employeeId);
-    }
-
-    public Optional<Workday> findWorkday(Long employeeId, LocalDate localdate) {
-        return workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, localdate);
     }
 
     @Transactional
@@ -56,7 +50,7 @@ public class WorkdayService {
             newDay.setEmployee(employee);
             newDay.setWorkdayDate(today);
             newDay.setDayOfTheWeek(today.getDayOfWeek().name());
-            return workdayRepository.save(newDay);
+            return newDay;
         });
 
         processPunch(workday, employee.getContractType(), now);
@@ -91,7 +85,7 @@ public class WorkdayService {
         Employee employee = employeeService.getEmployeeById(workdayUpdateDto.employeeId());
         Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(workdayUpdateDto.employeeId(), workdayUpdateDto.workdayDate()).orElseThrow(() -> new WorkdayException("Workday not found"));
 
-        workdayUtils.validateNewTime(workdayUpdateDto.workShift(), workdayUpdateDto.newTime(), workday);
+        WorkdayUtils.validateNewTime(workdayUpdateDto.workShift(), workdayUpdateDto.newTime(), workday);
 
         switch (workdayUpdateDto.workShift()) {
             case MORNING_CHECK_IN -> workday.setMorningCheckIn(workdayUpdateDto.newTime());
@@ -107,7 +101,7 @@ public class WorkdayService {
 
     }
 
-    public WorkStats getWorkStatsByEmployee(Long employeeId) {
+    public WorkStats getWorkStatsByEmployeeId(Long employeeId) {
 
         Employee employee = employeeService.getEmployeeById(employeeId);
 
@@ -117,14 +111,13 @@ public class WorkdayService {
         Month currentMonth = LocalDate.now().getMonth();
         LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() % 7);
 
-        long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(Workday::timeWorked).sum();
-        long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(Workday::timeWorked).sum();
-        long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::timeWorked).sum();
-        long extraMinutesWorkedInTheMonth = extraHours(minutesWorkedInTheMonth);
-        long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::lateHours).sum();
+        long minutesWorkedToday = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().equals(today)).mapToLong(Workday::getMinutesWorked).sum();
+        long minutesWorkedInTheWeek = allWorkdays.stream().filter(workday -> !workday.getWorkdayDate().isBefore(startOfWeek)).mapToLong(Workday::getMinutesWorked).sum();
+        long minutesWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::getMinutesWorked).sum();
+        long extraMinutesWorkedInTheMonth = allWorkdays.stream().filter((workday -> workday.getWorkdayDate().getMonth().equals(currentMonth))).mapToLong(Workday::getExtraMinutes).sum();
+        long minutesLateInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).mapToLong(Workday::getLateMinutes).sum();
 
         List<LocalDate> missingDays = missingDays(allWorkdays);
-
 
         return new WorkStats(employeeService.getEmployeeById(employeeId).getName(),
                 formatMinutesToHours(minutesWorkedInTheMonth),
@@ -135,10 +128,7 @@ public class WorkdayService {
                 missingDays.size());
     }
 
-    public long extraHours(long minutesWorkedInTheMonth) {
-        return Math.max(0, minutesWorkedInTheMonth - 9600);
-    }
-
+    //workday utils
     public List<LocalDate> missingDays(List<Workday> workdays) {
 
         List<LocalDate> missingDays = new ArrayList<>();

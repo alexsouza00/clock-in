@@ -1,7 +1,7 @@
 package com.clockin.model;
 
+import com.clockin.model.enums.ContractType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -99,7 +99,7 @@ public class Workday {
         this.afternoonCheckOut = afternoonCheckOut;
     }
 
-    public long timeWorked() {
+    public long getMinutesWorked() {
 
         long totalMinutes = 0;
 
@@ -115,7 +115,22 @@ public class Workday {
         return totalMinutes;
     }
 
-    public long lateHours() {
+    public long getExtraMinutes(){
+
+        final long CLT_WORKING_MINUTES = 480;
+        final long MAX_EXTRA_MINUTES = 120;
+
+        if(this.employee.getContractType() == ContractType.ESTAGIO){
+            return 0;
+        } else if(getMinutesWorked() - CLT_WORKING_MINUTES >= MAX_EXTRA_MINUTES) {
+            return MAX_EXTRA_MINUTES;
+        } else {
+            return Math.max(0, getMinutesWorked() - CLT_WORKING_MINUTES);
+        }
+
+    }
+
+    public long getLateMinutes() {
 
         LocalTime morningCheckIn = LocalTime.of(8, 0);
         LocalTime afternoonCheckIn = LocalTime.of(13, 0);
