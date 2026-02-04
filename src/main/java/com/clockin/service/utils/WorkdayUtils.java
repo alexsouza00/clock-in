@@ -5,13 +5,40 @@ import com.clockin.exceptions.WorkdayException;
 import com.clockin.model.Workday;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class WorkdayUtils {
 
     private static final LocalTime MIDDAY = LocalTime.NOON;
+
+    public static List<LocalDate> getWorkAbsences(List<Workday> workdays) {
+
+        List<LocalDate> absencesDays = new ArrayList<>();
+        LocalDate dayOfTheMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate today = LocalDate.now();
+
+        while (dayOfTheMonth.isBefore(today)) {
+
+            if (!isWeekend(dayOfTheMonth)) {
+                if (!workdays.contains(dayOfTheMonth)) {
+                    absencesDays.add(dayOfTheMonth);
+                }
+            }
+            dayOfTheMonth = dayOfTheMonth.plusDays(1);
+        }
+        return absencesDays;
+    }
+
+    public static boolean isWeekend(LocalDate date) {
+        if (date.getDayOfWeek().equals(DayOfWeek.SATURDAY) || date.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            return true;
+        } else return false;
+    }
 
     public static void validateNewTime(WorkShift shift, LocalTime newTime, Workday workday) {
 
@@ -49,8 +76,6 @@ public class WorkdayUtils {
         }
 
     }
-
-
 
     public static String formatMinutesToHours(long totalMinutes) {
 

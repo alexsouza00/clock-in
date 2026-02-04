@@ -1,5 +1,6 @@
 package com.clockin.model;
 
+import com.clockin.exceptions.WorkdayFullException;
 import com.clockin.model.enums.ContractType;
 import jakarta.persistence.*;
 
@@ -97,6 +98,27 @@ public class Workday {
 
     public void setAfternoonCheckOut(LocalTime afternoonCheckOut) {
         this.afternoonCheckOut = afternoonCheckOut;
+    }
+
+    public void processPunch(LocalTime now) {
+
+        LocalTime MIDDAY = LocalTime.NOON;
+
+        if (employee.getContractType() == ContractType.CLT) {
+            if (this.getMorningCheckIn() == null) this.setMorningCheckIn(now);
+            else if (this.getMorningCheckOut() == null) this.setMorningCheckOut(now);
+            else if (this.getAfternoonCheckIn() == null) this.setAfternoonCheckIn(now);
+            else if (this.getAfternoonCheckOut() == null) this.setAfternoonCheckOut(now);
+            else throw new WorkdayFullException();
+        } else if (employee.getContractType() == ContractType.ESTAGIO) {
+            if (now.isBefore(MIDDAY)) {
+                if (this.getMorningCheckIn() == null) this.setMorningCheckIn(now);
+                else if (this.getMorningCheckOut() == null) this.setMorningCheckOut(now);
+                else throw new WorkdayFullException();
+            } else if (this.getAfternoonCheckIn() == null) this.setAfternoonCheckIn(now);
+            else if (this.getAfternoonCheckOut() == null) this.setAfternoonCheckOut(now);
+            else throw new WorkdayFullException();
+        }
     }
 
     public long getMinutesWorked() {

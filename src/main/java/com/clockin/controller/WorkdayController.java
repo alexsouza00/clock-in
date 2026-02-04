@@ -20,20 +20,19 @@ public class WorkdayController {
     }
 
     @GetMapping("/{employeeId}")
-    public ResponseEntity<List<Workday>> getAllWorkdaysByEmployeeId(@PathVariable Long employeeId){
-            return ResponseEntity.ok().body(workdayService.getAllWorkdaysByEmployeeId(employeeId));
+    public ResponseEntity<List<Workday>> getAllWorkdaysByEmployeeId(@PathVariable Long employeeId) {
+        return ResponseEntity.ok().body(workdayService.getAllWorkdaysByEmployeeId(employeeId));
     }
 
     @PostMapping("/punch/{employeeId}")
-    public ResponseEntity<String> registerWorkday(@PathVariable Long employeeId){
+    public ResponseEntity<String> registerWorkday(@PathVariable Long employeeId) {
         workdayService.registerWorkday(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body("Recorded time!");
     }
 
     @PutMapping
-    public ResponseEntity<String> updateWorkday (@RequestBody WorkdayUpdateDto workdayUpdateDto){
+    public ResponseEntity<String> updateWorkday(@RequestBody WorkdayUpdateDto workdayUpdateDto) {
         workdayService.updateWorkday(workdayUpdateDto);
         return ResponseEntity.status(HttpStatus.OK).body("Workday Updated!");
     }
-
 }
