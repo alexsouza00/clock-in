@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "employees")
-public class Employee{
+public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +39,10 @@ public class Employee{
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -61,10 +65,6 @@ public class Employee{
 
     @Override
     public String toString() {
-        return "Employee{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", contractType=" + contractType +
-                '}';
+        return "Employee{" + "id=" + id + ", name='" + name + '\'' + ", contractType=" + contractType + '}';
     }
 }

@@ -1,10 +1,13 @@
 package com.clockin.service;
 
 import com.clockin.dto.request.WorkdayUpdateDto;
+import com.clockin.dto.response.EmployeeResponse;
 import com.clockin.dto.response.WorkStats;
+import com.clockin.exceptions.EmployeeNotFoundException;
 import com.clockin.exceptions.WorkdayException;
 import com.clockin.model.Employee;
 import com.clockin.model.Workday;
+import com.clockin.repository.EmployeeRepository;
 import com.clockin.repository.WorkdayRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,16 +21,16 @@ import static com.clockin.service.utils.WorkdayUtils.*;
 public class WorkdayService {
 
     private final WorkdayRepository workdayRepository;
-    private final EmployeeService employeeService;
+    private final EmployeeRepository employeeRepository;
 
-    public WorkdayService(WorkdayRepository workdayRepository, EmployeeService employeeService) {
+    public WorkdayService(WorkdayRepository workdayRepository, EmployeeRepository employeeRepository) {
         this.workdayRepository = workdayRepository;
-        this.employeeService = employeeService;
+        this.employeeRepository = employeeRepository;
     }
 
     public List<Workday> getAllWorkdaysByEmployeeId(Long employeeId) {
-        Employee employee = employeeService.getEmployeeById(employeeId);
-        return workdayRepository.findByEmployeeId(employee.getId());
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
+        return workdayRepository.findByEmployeeId(employeeId);
     }
 
     @Transactional
@@ -40,7 +43,7 @@ public class WorkdayService {
         }
 
         LocalTime now = LocalTime.now();
-        Employee employee = employeeService.getEmployeeById(employeeId);
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
 
         Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employeeId, today).orElseGet(() -> {
             Workday newDay = new Workday();
@@ -56,7 +59,7 @@ public class WorkdayService {
 
     public WorkStats getWorkStatsByEmployeeId(Long employeeId) {
 
-        Employee employee = employeeService.getEmployeeById(employeeId);
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(EmployeeNotFoundException::new);
         List<Workday> allWorkdays = workdayRepository.findByEmployeeId(employee.getId());
 
         LocalDate today = LocalDate.now();
@@ -71,7 +74,7 @@ public class WorkdayService {
 
         List<Workday> daysWorkedInTheMonth = allWorkdays.stream().filter(workday -> workday.getWorkdayDate().getMonth().equals(currentMonth)).toList();
 
-        return new WorkStats(employeeService.getEmployeeById(employeeId).getName()
+        return new WorkStats(employee.getName()
                 , formatMinutesToHours(minutesWorkedInTheMonth)
                 , formatMinutesToHours(minutesWorkedInTheWeek)
                 , formatMinutesToHours(minutesWorkedToday)
@@ -82,7 +85,7 @@ public class WorkdayService {
 
     public void updateWorkday(WorkdayUpdateDto workdayUpdateDto) {
 
-        Employee employee = employeeService.getEmployeeById(workdayUpdateDto.employeeId());
+        Employee employee = employeeRepository.findById(workdayUpdateDto.employeeId()).orElseThrow(EmployeeNotFoundException::new);
         Workday workday = workdayRepository.findByEmployeeIdAndWorkdayDate(employee.getId(), workdayUpdateDto.workdayDate()).orElseThrow(() -> new WorkdayException("Workday not found"));
 
         validateNewTime(workdayUpdateDto.workShift(), workdayUpdateDto.newTime(), workday);
