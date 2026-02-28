@@ -42,7 +42,7 @@ class EmployeeServiceTest {
 
         EmployeeNotFoundException exception = assertThrows(EmployeeNotFoundException.class, employeeService::getAllEmployees);
 
-        assertEquals("No Employees were Found!", exception.getMessage());
+        assertEquals("Employee not found", exception.getMessage());
         verify(employeeRepository, times(1)).findAll();
 
     }
@@ -105,7 +105,7 @@ class EmployeeServiceTest {
 
         EmployeeNotFoundException exception = assertThrows(EmployeeNotFoundException.class, () -> employeeService.updateEmployee(1L, employeeUpdate));
 
-        assertEquals("Employee not found.", exception.getMessage());
+        assertEquals("Employee not found", exception.getMessage());
         verify(employeeRepository, times(1)).findById(1L);
     }
 

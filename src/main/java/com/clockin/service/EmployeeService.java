@@ -28,7 +28,7 @@ public class EmployeeService {
         List<EmployeeResponse> employeeResponse = new ArrayList<>();
 
         if (employees.isEmpty()) {
-            throw new EmployeeNotFoundException("No Employees were Found!");
+            throw new EmployeeNotFoundException();
         } else {
             for (Employee employee : employees) {
                 employeeResponse.add(new EmployeeResponse(employee.getId(), employee.getName(), employee.getContractType()));
